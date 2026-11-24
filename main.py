@@ -11,16 +11,35 @@ import sys
 
 EXCUSE = "My code passed every test. The tests, it turns out, were also written by me."
 
+MAX_CHARS = 200
 
-def main():
-    line = EXCUSE
-    if not line.strip() or "\n" in line or len(line) > 200:
-        raise ValueError("excuse fails the gate")
+
+def resolve_output_dir():
+    return os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+
+
+def validate_line(line):
+    if not isinstance(line, str):
+        raise ValueError("excuse must be text")
+    if not line.strip():
+        raise ValueError("excuse must not be only whitespace")
+    if "\n" in line or "\r" in line:
+        raise ValueError("excuse must be a single line")
+    if len(line) > MAX_CHARS:
+        raise ValueError("excuse exceeds 200 characters")
     line.encode("utf-8")
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    return line
+
+
+def write_entry(line, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8", newline="") as f:
         f.write(line)
+
+
+def main():
+    line = validate_line(EXCUSE)
+    write_entry(line, resolve_output_dir())
     return 0
 
 
